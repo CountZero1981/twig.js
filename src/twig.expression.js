@@ -874,9 +874,9 @@ module.exports = function (Twig) {
                         if (object === null || object === undefined) {
                             if (state.template.options.strict_variables) {
                                 throw new Twig.Error('Can\'t access a key ' + key + ' on an null or undefined object.');
-                            } else {
-                                value = undefined;
                             }
+
+                            value = undefined;
                         } else {
                             const capitalize = function (value) {
                                 return value.substr(0, 1).toUpperCase() + value.substr(1);
@@ -890,6 +890,10 @@ module.exports = function (Twig) {
                             } else if (object['is' + capitalize(key)]) {
                                 value = object['is' + capitalize(key)];
                             } else {
+                                if (state.template.options.strict_variables) {
+                                    throw new Twig.Error('Object doesn\'t contain a key ' + key + '.');
+                                }
+
                                 value = undefined;
                             }
                         }
@@ -947,6 +951,10 @@ module.exports = function (Twig) {
                         if (typeof object === 'object' && key in object) {
                             value = object[key];
                         } else {
+                            if (state.template.options.strict_variables) {
+                                throw new Twig.Error('Object doesn\'t contain a key ' + key + '.');
+                            }
+
                             value = null;
                         }
 
