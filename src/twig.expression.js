@@ -846,6 +846,10 @@ module.exports = function (Twig) {
                 // Get the variable from the context
                 return Twig.expression.resolveAsync.call(state, context[token.value], context)
                     .then(value => {
+                        if (state.template.options.strict_variables && value === undefined) {
+                            throw new Twig.Error('Can\'t access a key ' + key + ' on an null or undefined object.');
+                        }
+
                         stack.push(value);
                     });
             }
@@ -942,20 +946,19 @@ module.exports = function (Twig) {
                         if (object === null || object === undefined) {
                             if (state.template.options.strict_variables) {
                                 throw new Twig.Error('Can\'t access a key ' + key + ' on an null or undefined object.');
-                            } else {
-                                return null;
                             }
+
+                            return null;
                         }
 
                         // Get the variable from the context
-                        if (typeof object === 'object' && key in object) {
-                            value = object[key];
-                        } else {
-                            if (state.template.options.strict_variables) {
+                        value = null;
+                        if (typeof object === 'object') {
+                            if (key in object) {
+                                value = object[key]
+                            } else if (state.template.options.strict_variables) {
                                 throw new Twig.Error('Object doesn\'t contain a key ' + key + '.');
                             }
-
-                            value = null;
                         }
 
                         // When resolving an expression we need to pass nextToken in case the expression is a function
